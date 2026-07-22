@@ -1,0 +1,70 @@
+/*
+ * The one shared design system — cheerful toon arcade. Sunny sky, warm wood court,
+ * candy accents. Every screen pulls from these variables; never hardcode colors in SFCs.
+ */
+:root {
+  --sky: #7ec8f3;
+  --sky-deep: #58aee6;
+  --panel: #fffaf2;
+  --panel-soft: #fff3df;
+  --rule: #f3ddc0;
+
+  --ink: #35405c; /* primary text — soft navy, never harsh black */
+  --ink-soft: #6b7694;
+  --ink-faint: #9aa4bd;
+
+  --ball: #ff8a3d; /* the hero orange */
+  --ball-deep: #e86f24;
+  --court: #ffce8a; /* warm maple */
+  --court-line: #e8a35c;
+
+  --pop: #ff5d73; /* coral — buttons, excitement, swish flashes */
+  --pop-deep: #e64560;
+  --mint: #43d9a3; /* success, makes, W's */
+  --sun: #ffd93d; /* stars, streaks, confetti */
+  --grape: #9d7bff; /* AI opponent accent */
+
+  --shadow: 0 6px 0 rgba(53, 64, 92, 0.12);
+  --shadow-pop: 0 8px 0 var(--pop-deep);
+
+  --round: 'Baloo 2', 'Arial Rounded MT Bold', ui-rounded, 'Nunito', 'Quicksand',
+    -apple-system, sans-serif;
+
+  --radius: 18px;
+  --radius-big: 28px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--sky);
+}
+
+body {
+  font-family: var(--round);
+  font-weight: 700;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  touch-action: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}

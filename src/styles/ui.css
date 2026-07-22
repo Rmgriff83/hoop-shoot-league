@@ -1,0 +1,133 @@
+/*
+ * Shared bouncy UI primitives. Everything springs — but all keyframe motion sits
+ * behind the reduced-motion guard at the bottom.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 30px;
+  border-radius: var(--radius);
+  background: var(--pop);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-pop);
+  transform: translateY(0);
+  transition:
+    transform 0.09s ease-out,
+    box-shadow 0.09s ease-out,
+    filter 0.09s ease-out;
+}
+
+.btn:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 var(--pop-deep);
+}
+
+.btn:disabled {
+  filter: saturate(0.2) brightness(1.05);
+  box-shadow: 0 6px 0 rgba(53, 64, 92, 0.15);
+  cursor: default;
+}
+
+.btn--mint {
+  background: var(--mint);
+  box-shadow: 0 8px 0 #2eb083;
+}
+.btn--mint:active {
+  box-shadow: 0 2px 0 #2eb083;
+}
+
+.btn--ghost {
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 8px 0 rgba(53, 64, 92, 0.15);
+}
+.btn--ghost:active {
+  box-shadow: 0 2px 0 rgba(53, 64, 92, 0.15);
+}
+
+.btn--small {
+  padding: 9px 18px;
+  font-size: 15px;
+  border-radius: 14px;
+  box-shadow: 0 5px 0 var(--pop-deep);
+}
+.btn--small:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--pop-deep);
+}
+
+.card {
+  background: var(--panel);
+  border-radius: var(--radius-big);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+/* Springy pop-in for panels/cards mounting. */
+@keyframes pop-in {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  62% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  82% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  animation: pop-in 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* Gentle idle bob for title art / mascots. */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+.bob {
+  animation: bob 2.2s ease-in-out infinite;
+}
+
+/* Excited wiggle — score flashes, streak badges. */
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-4deg) scale(1.08);
+  }
+  75% {
+    transform: rotate(4deg) scale(1.08);
+  }
+}
+
+.wiggle {
+  animation: wiggle 0.35s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop-in,
+  .bob,
+  .wiggle {
+    animation: none;
+  }
+}
