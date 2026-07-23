@@ -6,7 +6,7 @@
 import { openDB, type IDBPDatabase } from 'idb'
 
 export const DB_NAME = 'hoop-shoot-league'
-export const DB_VERSION = 1
+export const DB_VERSION = 2
 
 export type Db = IDBPDatabase
 
@@ -23,6 +23,10 @@ export function getDb(): Promise<Db> {
           shots.createIndex('byGame', 'gameKey')
           db.createObjectStore('liveGames', { keyPath: 'key' })
           db.createObjectStore('meta', { keyPath: 'key' })
+        }
+        // v2 — device-level time-trial leaderboard (deliberately campaign-free).
+        if (oldVersion < 2) {
+          db.createObjectStore('timeTrialScores', { keyPath: 'id' })
         }
       },
       blocked() {

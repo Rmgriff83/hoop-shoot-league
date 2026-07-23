@@ -7,7 +7,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { hashSeed } from '../core/rng/rng'
 import type { Conference } from '../core/league/types'
-import { buildLeagueTeams, PLAYER_TEAM_ID } from '../core/league/leagueBuilder'
+import { buildLeagueTeams, PLAYER_TEAM_ID, teamsForSeason } from '../core/league/leagueBuilder'
 import {
   createSeason,
   gamesOn,
@@ -25,7 +25,7 @@ import {
   updateSelfRatings,
   type DifficultyTier,
 } from '../core/league/playerRatings'
-import { SEASON_DAYS } from '../core/league/scheduleGen'
+import { seasonDaysOf } from '../core/league/scheduleGen'
 import { shooterById } from '../core/data/shooters'
 import {
   getActiveCampaignId,
@@ -47,7 +47,9 @@ export const useCampaignStore = defineStore('campaign', () => {
 
   const teams = computed(() => {
     if (!doc.value) return []
-    return buildLeagueTeams(doc.value.conference, doc.value.playerName, selfAsAiRatings(doc.value.selfRatings))
+    // Season-aware: legacy seasons that scheduled since-retired shooters keep
+    // resolving; fresh seasons build from the active 16-team league.
+    return teamsForSeason(doc.value.season, doc.value.conference, doc.value.playerName, selfAsAiRatings(doc.value.selfRatings))
   })
 
   const season = computed(() => doc.value?.season ?? null)
@@ -183,7 +185,7 @@ export const useCampaignStore = defineStore('campaign', () => {
       d.season.phase === 'regular'
         ? (playerGameOn(d.season, d.season.currentDay, PLAYER_TEAM_ID)?.id ?? `y${d.year}-live`)
         : `${currentSeries.value?.id ?? 'series'}-g${seriesGameNo()}`
-    const day = d.season.phase === 'regular' ? d.season.currentDay : SEASON_DAYS + seriesGameNo()
+    const day = d.season.phase === 'regular' ? d.season.currentDay : seasonDaysOf(d.season.schedule) + seriesGameNo()
 
     if (d.season.phase === 'regular') {
       resolveDay(d.season, teams.value, PLAYER_TEAM_ID, selfAsAiRatings(d.selfRatings), live)
@@ -245,7 +247,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   async function simRestOfSeason() {
     if (!doc.value) return
     let guard = 0
-    while (doc.value.season.phase === 'regular' && guard++ < SEASON_DAYS + 1) {
+    while (doc.value.season.phase === 'regular' && guard++ < seasonDaysOf(doc.value.season.schedule) + 1) {
       resolveDay(doc.value.season, teams.value, PLAYER_TEAM_ID, selfAsAiRatings(doc.value.selfRatings), null)
     }
     maybeFinishSeason()
@@ -303,12 +305,14 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
-  /** Roll into the next season (new schedule, same league, careers persist). */
+  /** Roll into the next season (new schedule, careers persist). Always builds
+   *  from the ACTIVE roster — retired shooters don't carry into fresh seasons. */
   async function startNextSeason() {
     const d = doc.value
     if (!d || d.season.phase !== 'done') return
     d.year++
-    d.season = createSeason(teams.value, d.year, hashSeed(d.id, d.year))
+    const freshTeams = buildLeagueTeams(d.conference, d.playerName, selfAsAiRatings(d.selfRatings))
+    d.season = createSeason(freshTeams, d.year, hashSeed(d.id, d.year))
     await saveCampaign(d)
   }
 

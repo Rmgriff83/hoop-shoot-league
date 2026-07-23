@@ -1,7 +1,9 @@
 /**
- * The 17 authored AI shooters (handoff §6-7). Hand-written, not procedural —
- * each one has a personality the ratings back up. 9 EAST + 8 WEST as authored;
- * `flex` on Sunny Vale moves her opposite the player's pick to keep 9/9.
+ * The authored AI shooters. Hand-written, not procedural — each one has a
+ * personality the ratings back up. Active league = 15 shooters (8 EAST incl.
+ * the flex + 7 WEST); `flex` on Sunny Vale moves her opposite the player's
+ * pick to keep both conferences at 8. Two shooters are `retired` (the 2026
+ * downsizing from 18 to 16 teams) and exist only so legacy seasons resolve.
  *
  * Rating language: accuracy = base make probability; swishRate biases arc into
  * the 52–55° window; pace = seconds per shot; composure/streakiness/consistency
@@ -46,6 +48,7 @@ export const SHOOTERS: readonly ShooterConfig[] = [
     colors: { primary: '#2f7fc9', secondary: '#1d5486', accent: '#fffaf2' },
     signature: 'Sways side to side before every shot like a moored boat.',
     ratings: { accuracy: 0.55, swishRate: 0.5, pace: 4.1, composure: 0.6, streakiness: 0.45, consistency: 0.7 },
+    retired: true, // league downsizing — legacy seasons only
   },
   {
     id: 'pinewick',
@@ -192,6 +195,7 @@ export const SHOOTERS: readonly ShooterConfig[] = [
     colors: { primary: '#bdc9d6', secondary: '#8494a6', accent: '#43d9a3' },
     signature: 'Blistering rhythm shooting — dares you to keep up.',
     ratings: { accuracy: 0.68, swishRate: 0.62, pace: 2.8, composure: 0.7, streakiness: 0.3, consistency: 0.8 },
+    retired: true, // league downsizing — legacy seasons only
   },
   {
     id: 'red-rock',
@@ -218,6 +222,9 @@ export const SHOOTERS: readonly ShooterConfig[] = [
     ratings: { accuracy: 0.8, swishRate: 0.8, pace: 3.5, composure: 0.9, streakiness: 0.2, consistency: 0.9 },
   },
 ]
+
+/** The current league roster — excludes retired shooters (legacy-season-only). */
+export const ACTIVE_SHOOTERS: readonly ShooterConfig[] = SHOOTERS.filter((s) => !s.retired)
 
 export function shooterById(id: string): ShooterConfig | undefined {
   return SHOOTERS.find((s) => s.id === id)

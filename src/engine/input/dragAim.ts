@@ -17,8 +17,8 @@ export interface DragAimHandlers {
 }
 
 export interface DragAimOptions {
-  /** +1 when screen-right is toward the hoop, −1 when the shooter faces left. */
-  facing?: 1 | -1
+  /** +1 when screen-right is toward the hoop, −1 when the shooter faces left. A getter makes it live-swappable. */
+  facing?: 1 | -1 | (() => 1 | -1)
   /** Fraction of the viewport diagonal that counts as a full-power drag. */
   dragScale?: number
   enabled?: () => boolean
@@ -27,7 +27,10 @@ export interface DragAimOptions {
 const SMOOTH = 0.45 // EMA factor per move event ≈ 3-sample settle
 
 export function attachDragAim(el: HTMLElement, handlers: DragAimHandlers, opts: DragAimOptions = {}): () => void {
-  const facing = opts.facing ?? 1
+  const facing = (): 1 | -1 => {
+    const f = opts.facing ?? 1
+    return typeof f === 'function' ? f() : f
+  }
   const dragScale = opts.dragScale ?? 0.42
   let active = false
   let startX = 0
@@ -38,7 +41,7 @@ export function attachDragAim(el: HTMLElement, handlers: DragAimHandlers, opts: 
   const dMax = () => Math.hypot(el.clientWidth, el.clientHeight) * dragScale
 
   const currentLaunch = (): LaunchParams | null =>
-    dragToLaunch({ dx: emaDx * facing, dy: emaDy, dMax: dMax() })
+    dragToLaunch({ dx: emaDx * facing(), dy: emaDy, dMax: dMax() })
 
   const down = (e: PointerEvent) => {
     if (opts.enabled && !opts.enabled()) return

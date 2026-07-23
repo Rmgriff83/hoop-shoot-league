@@ -10,6 +10,7 @@ export type Screen =
   | 'matchResult'
   | 'standings'
   | 'schedule'
+  | 'timeTrial'
   | 'playoffs'
   | 'shooterCard'
 

@@ -3,7 +3,18 @@
  * oversized — cute first. Physics never reads from here.
  */
 import * as THREE from 'three'
-import { BOARD_BOTTOM, BOARD_HALF_W, BOARD_OFFSET, BOARD_TOP, R_RIM, R_TUBE, RIM_HEIGHT } from '../../core/physics/constants'
+import {
+  BOARD_BOTTOM,
+  BOARD_HALF_W,
+  BOARD_OFFSET,
+  BOARD_TOP,
+  COURT_LEN,
+  R_RIM,
+  R_TUBE,
+  RIM_FROM_BASELINE,
+  RIM_HEIGHT,
+  SHOT_DIST,
+} from '../../core/physics/constants'
 import { Spring } from '../anim/spring'
 
 export const COLORS = {
@@ -66,6 +77,30 @@ export function makeFloor(scene: THREE.Scene, x0: number, x1: number): void {
   const line = new THREE.Mesh(new THREE.BoxGeometry(w, 0.02, 0.1), lineMat)
   line.position.set((x0 + x1) / 2, 0.012, 2.2)
   scene.add(line)
+}
+
+/**
+ * The campaign court's half, exact, in canonical shot space: floor from just
+ * past midcourt to just past the baseline (same apron as MatchScreen), with
+ * painted baseline + half-court lines. Used by halfcourt modes (time trial).
+ */
+export function makeHalfCourtFloor(scene: THREE.Scene): void {
+  const { CANON_BASELINE_X, CANON_MIDCOURT_X, COURT_APRON } = HALF_COURT
+  makeFloor(scene, CANON_MIDCOURT_X - COURT_APRON, CANON_BASELINE_X + COURT_APRON)
+  const lineMat = new THREE.MeshLambertMaterial({ color: COLORS.courtLine })
+  for (const x of [CANON_BASELINE_X, CANON_MIDCOURT_X]) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 8), lineMat)
+    line.position.set(x, 0.012, 0)
+    scene.add(line)
+  }
+}
+
+// Derived from the same core constants the campaign court uses — see
+// worldMap.ts for the world-space equivalents.
+const HALF_COURT = {
+  CANON_BASELINE_X: SHOT_DIST + RIM_FROM_BASELINE,
+  CANON_MIDCOURT_X: SHOT_DIST + RIM_FROM_BASELINE - COURT_LEN / 2,
+  COURT_APRON: 1.5,
 }
 
 export interface HoopView {

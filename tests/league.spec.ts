@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { generateSchedule, SEASON_DAYS, type TeamRef } from '../src/core/league/scheduleGen'
+import { generateSchedule, seasonDaysOf, type TeamRef } from '../src/core/league/scheduleGen'
 import { quickSimGame } from '../src/core/league/quickSim'
 import { conferenceTable, gamesBehind } from '../src/core/league/standings'
-import { SHOOTERS } from '../src/core/data/shooters'
+import { ACTIVE_SHOOTERS, SHOOTERS } from '../src/core/data/shooters'
+import { teamsForSeason } from '../src/core/league/leagueBuilder'
 import {
   createSeason,
   playerGameOn,
@@ -14,7 +15,7 @@ import {
 import type { AiRatings } from '../src/core/ai/types'
 
 function leagueTeams(playerConference: 'EAST' | 'WEST' = 'EAST'): LeagueTeam[] {
-  const teams: LeagueTeam[] = SHOOTERS.map((s) => ({
+  const teams: LeagueTeam[] = ACTIVE_SHOOTERS.map((s) => ({
     id: s.id,
     conference: s.flex ? (playerConference === 'EAST' ? 'WEST' : 'EAST') : s.conference,
     name: s.name,
@@ -32,27 +33,64 @@ function leagueTeams(playerConference: 'EAST' | 'WEST' = 'EAST'): LeagueTeam[] {
 }
 
 describe('authored league', () => {
-  it('17 AI shooters; flex balancing gives 9/9 for either player conference', () => {
-    expect(SHOOTERS).toHaveLength(17)
+  it('15 active AI shooters (+2 retired legacy); flex balancing gives 8/8 either way', () => {
+    expect(ACTIVE_SHOOTERS).toHaveLength(15)
+    expect(SHOOTERS.filter((s) => s.retired)).toHaveLength(2)
     for (const conf of ['EAST', 'WEST'] as const) {
       const teams = leagueTeams(conf)
-      expect(teams.filter((t) => t.conference === 'EAST')).toHaveLength(9)
-      expect(teams.filter((t) => t.conference === 'WEST')).toHaveLength(9)
+      expect(teams).toHaveLength(16)
+      expect(teams.filter((t) => t.conference === 'EAST')).toHaveLength(8)
+      expect(teams.filter((t) => t.conference === 'WEST')).toHaveLength(8)
     }
+  })
+
+  it('legacy seasons that scheduled retired shooters still resolve (teamsForSeason)', () => {
+    const retired = SHOOTERS.find((s) => s.retired)!
+    const season = {
+      year: 1,
+      seed: 1,
+      currentDay: 1,
+      phase: 'regular' as const,
+      series: [],
+      championId: null,
+      schedule: [
+        {
+          id: 'legacy-g1',
+          day: 1,
+          homeId: 'player',
+          awayId: retired.id,
+          homeScore: 0,
+          awayScore: 0,
+          homeSwishes: 0,
+          awaySwishes: 0,
+          otRacks: 0,
+          playedLive: false,
+          played: false,
+        },
+      ],
+    }
+    const self = leagueTeams()[0]!.ratings
+    const teams = teamsForSeason(season, 'EAST', 'You', self)
+    const legacyTeam = teams.find((t) => t.id === retired.id)
+    expect(legacyTeam).toBeDefined()
+    expect(legacyTeam!.ratings).toEqual(retired.ratings)
+    // And the active league itself stays 16 — the retired shooter is an add-on.
+    expect(teams).toHaveLength(17)
   })
 })
 
-describe('schedule generation (property: handoff §7 exactly)', () => {
-  it('378 games, 42 days × 9, everyone plays daily, ×3 conference ×2 cross', () => {
+describe('schedule generation (16-team league: 37 days × 8 games)', () => {
+  it('296 games, 37 days × 8, everyone plays daily, ×3 conference ×2 cross', () => {
     for (const seed of [1, 77, 4242]) {
       const teams = leagueTeams()
       const schedule = generateSchedule(teams, seed)
-      expect(schedule).toHaveLength(378)
+      expect(schedule).toHaveLength(296)
+      expect(seasonDaysOf(schedule)).toBe(37)
 
       const pairCounts = new Map<string, number>()
-      for (let day = 1; day <= SEASON_DAYS; day++) {
+      for (let day = 1; day <= 37; day++) {
         const games = schedule.filter((g) => g.day === day)
-        expect(games, `day ${day}`).toHaveLength(9)
+        expect(games, `day ${day}`).toHaveLength(8)
         const seen = new Set<string>()
         for (const g of games) {
           seen.add(g.homeId)
@@ -60,7 +98,7 @@ describe('schedule generation (property: handoff §7 exactly)', () => {
           const key = [g.homeId, g.awayId].sort().join('|')
           pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1)
         }
-        expect(seen.size, `day ${day} participation`).toBe(18)
+        expect(seen.size, `day ${day} participation`).toBe(16)
       }
 
       const byId = new Map(teams.map((t) => [t.id, t]))
@@ -111,14 +149,14 @@ describe('full season → playoffs → champion (headless)', () => {
     expect(season.phase).toBe('playoffs')
     expect(season.series).toHaveLength(4)
 
-    // Every game played, standings coherent: total W = total L = 189 each.
+    // Every game played, standings coherent.
     const east = conferenceTable(teams, 'EAST', season.schedule, season.seed)
     const west = conferenceTable(teams, 'WEST', season.schedule, season.seed)
     const totalW = [...east, ...west].reduce((sum, r) => sum + r.w, 0)
     const totalL = [...east, ...west].reduce((sum, r) => sum + r.l, 0)
-    expect(totalW).toBe(378)
-    expect(totalL).toBe(378)
-    expect(east.every((r) => r.w + r.l === 42)).toBe(true)
+    expect(totalW).toBe(296)
+    expect(totalL).toBe(296)
+    expect(east.every((r) => r.w + r.l === 37)).toBe(true)
     expect(east[0]!.seed).toBe(1)
 
     // Games behind: classic formula — 0 for the leader, non-decreasing down the table.

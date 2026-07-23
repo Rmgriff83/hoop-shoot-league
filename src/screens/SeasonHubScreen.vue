@@ -4,7 +4,7 @@ import { useUiStore } from '../stores/ui'
 import { useCampaignStore } from '../stores/campaign'
 import { useMatchStore } from '../stores/match'
 import { shooterById } from '../core/data/shooters'
-import { SEASON_DAYS } from '../core/league/scheduleGen'
+import { seasonDaysOf } from '../core/league/scheduleGen'
 import { PLAYER_TEAM_ID } from '../core/league/leagueBuilder'
 
 const ui = useUiStore()
@@ -14,6 +14,8 @@ const busy = ref(false)
 
 const d = computed(() => campaign.doc)
 const phase = computed(() => d.value?.season.phase)
+
+const totalDays = computed(() => (d.value ? seasonDaysOf(d.value.season.schedule) : 0))
 
 const myRow = computed(() => {
   if (!d.value) return null
@@ -102,7 +104,7 @@ function accStars(v: number): string {
 
       <!-- Regular season -->
       <div v-if="phase === 'regular'" class="main card pop-in">
-        <div class="day-tag">Season {{ d.year }} · Day {{ d.season.currentDay }} / {{ SEASON_DAYS }}</div>
+        <div class="day-tag">Season {{ d.year }} · Day {{ d.season.currentDay }} / {{ totalDays }}</div>
         <template v-if="opponent">
           <div class="opp-card" :style="{ '--opp': opponent.colors.primary }">
             <div class="opp-jersey">#{{ opponent.number }}</div>

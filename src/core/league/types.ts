@@ -15,8 +15,13 @@ export interface ShooterConfig {
   colors: { primary: string; secondary: string; accent: string }
   signature: string
   ratings: AiRatings
-  /** This shooter moves to the conference opposite the player's to keep 9/9. */
+  /** This shooter moves to the conference opposite the player's to keep conferences even. */
   flex?: boolean
+  /**
+   * No longer part of the active league (2026 downsizing to 16 teams). Kept in
+   * the data so legacy seasons that scheduled them keep resolving/displaying.
+   */
+  retired?: boolean
 }
 
 /** One league game (box-score level — §8 volume note). */

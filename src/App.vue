@@ -11,6 +11,7 @@ import SeasonHubScreen from './screens/SeasonHubScreen.vue'
 import StandingsScreen from './screens/StandingsScreen.vue'
 import PlayoffsScreen from './screens/PlayoffsScreen.vue'
 import ScheduleScreen from './screens/ScheduleScreen.vue'
+import TimeTrialScreen from './screens/TimeTrialScreen.vue'
 
 const ui = useUiStore()
 const campaign = useCampaignStore()
@@ -27,6 +28,7 @@ const screens: Partial<Record<string, unknown>> = {
   standings: StandingsScreen,
   playoffs: PlayoffsScreen,
   schedule: ScheduleScreen,
+  timeTrial: TimeTrialScreen,
 }
 
 const current = computed(() => screens[ui.screen] ?? TitleScreen)

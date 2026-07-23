@@ -1,16 +1,20 @@
 /**
- * Season schedule (handoff §7): 18 teams, each conference rival ×3 (24 games)
- * + each cross-conference team ×2 (18) = 42 games per team, 378 league games,
- * 42 days × 9-game slates, everyone plays every day.
+ * Season schedule: each conference rival ×3 + each cross-conference team ×2,
+ * one slate per day, everyone plays daily. Length derives from the league
+ * size — at 16 teams that's 37 games per team, 296 league games, 37 days.
  *
  * Seeded randomized per-day perfect matching over the remaining demand
- * multigraph, with whole-schedule restarts on dead ends (42×18 nodes — cheap).
+ * multigraph, with whole-schedule restarts on dead ends (cheap at this size).
  */
 import { Rng } from '../rng/rng'
 import type { Conference, GameRecord } from './types'
 
-export const SEASON_DAYS = 42
-export const GAMES_PER_DAY = 9
+/** Regular-season length recorded in a schedule (works for legacy lengths too). */
+export function seasonDaysOf(schedule: GameRecord[]): number {
+  let max = 0
+  for (const g of schedule) if (g.day > max) max = g.day
+  return max
+}
 
 export interface TeamRef {
   id: string
@@ -70,11 +74,18 @@ function matchDay(teamIds: string[], demand: Demand, rng: Rng): [string, string]
  */
 export function generateSchedule(teams: TeamRef[], seed: number): GameRecord[] {
   const rng = new Rng(seed)
+  // Total demand ÷ games-per-day must divide evenly for a one-slate-per-day season.
+  const totalGames = [...buildDemand(teams).values()].reduce((a, b) => a + b, 0)
+  const gamesPerDay = teams.length / 2
+  const days = totalGames / gamesPerDay
+  if (!Number.isInteger(days) || !Number.isInteger(gamesPerDay)) {
+    throw new Error(`league shape doesn't tile into daily slates: ${totalGames} games / ${gamesPerDay} per day`)
+  }
   for (let attempt = 0; attempt < 400; attempt++) {
     const demand = buildDemand(teams)
     const games: GameRecord[] = []
     let failed = false
-    for (let day = 1; day <= SEASON_DAYS && !failed; day++) {
+    for (let day = 1; day <= days && !failed; day++) {
       let matched: [string, string][] | null = null
       for (let tries = 0; tries < 40 && !matched; tries++) {
         matched = matchDay(

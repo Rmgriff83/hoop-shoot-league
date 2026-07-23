@@ -6,10 +6,12 @@ import { shooterById } from '../core/data/shooters'
 import { PLAYER_TEAM_ID } from '../core/league/leagueBuilder'
 import type { StandingRow } from '../core/league/types'
 import { currentStreak, gamesBehind, type ClinchInfo } from '../core/league/standings'
-import { SEASON_DAYS } from '../core/league/scheduleGen'
+import { seasonDaysOf } from '../core/league/scheduleGen'
 
 const ui = useUiStore()
 const campaign = useCampaignStore()
+
+const totalDays = computed(() => seasonDaysOf(campaign.doc?.season.schedule ?? []))
 
 const tables = computed(() => [
   { name: 'EASTERN', rows: campaign.east, clinches: campaign.eastClinches as Map<string, ClinchInfo> },
@@ -90,7 +92,7 @@ function teamLabel(row: StandingRow): { town: string; name: string } {
               <td>{{ row.l }}</td>
               <td>{{ (row.pct * 100).toFixed(0) }}</td>
               <td class="gb">{{ gbLabel(t, row) }}</td>
-              <td class="gb">{{ SEASON_DAYS - row.w - row.l }}</td>
+              <td class="gb">{{ totalDays - row.w - row.l }}</td>
               <td class="streak" :class="{ hot: streakOf(row).hot, cold: streakOf(row).cold }">
                 {{ streakOf(row).label }}<span v-if="streakOf(row).hot" class="flame">🔥</span>
               </td>

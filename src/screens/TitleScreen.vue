@@ -29,6 +29,7 @@ function playSeason() {
         {{ campaign.doc ? `Continue Season ${campaign.doc.year} 🏆` : 'Start a Season 🏆' }}
       </button>
       <button class="btn" @click="quickMatch">Quick Match 🏀</button>
+      <button class="btn" @click="ui.go('timeTrial')">Time Trial ⏱</button>
       <button class="btn btn--mint" @click="ui.go('sandbox')">Shot Sandbox</button>
       <button v-if="campaign.doc" class="btn btn--ghost btn--small" @click="ui.go('campaignCreate')">
         + new campaign

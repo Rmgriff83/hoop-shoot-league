@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { computeClinches, conferenceTable, currentStreak, guaranteedAhead } from '../src/core/league/standings'
 import type { TeamRef } from '../src/core/league/scheduleGen'
 import type { GameRecord } from '../src/core/league/types'
-import { SHOOTERS } from '../src/core/data/shooters'
+import { ACTIVE_SHOOTERS } from '../src/core/data/shooters'
 import { createSeason, resolveDay, type LeagueTeam } from '../src/core/league/season'
 
 function east9(): TeamRef[] {
@@ -100,7 +100,7 @@ describe('currentStreak', () => {
 
 describe('clinches over a real season (dynamic accuracy)', () => {
   function leagueTeams(): LeagueTeam[] {
-    const teams: LeagueTeam[] = SHOOTERS.map((s) => ({
+    const teams: LeagueTeam[] = ACTIVE_SHOOTERS.map((s) => ({
       id: s.id,
       conference: s.flex ? 'WEST' : s.conference,
       name: s.name,
@@ -160,8 +160,9 @@ describe('clinches over a real season (dynamic accuracy)', () => {
         if (everClinched.has(id)) expect(top4.has(id), `${id} clinched but missed playoffs`).toBe(true)
         if (everEliminated.has(id)) expect(top4.has(id), `${id} eliminated but made playoffs`).toBe(false)
       }
+      // 8-team conferences: top 4 in, bottom 4 out.
       expect(inCount).toBe(4)
-      expect(outCount).toBe(5)
+      expect(outCount).toBe(4)
       expect(topSeedCount).toBe(1)
     }
   })

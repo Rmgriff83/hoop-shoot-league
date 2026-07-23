@@ -1,12 +1,14 @@
 # 🏀 Hoop Shoot League
 
 Head-to-head arcade shooting game: you and an AI opponent race through 25-ball
-racks under a 3-second shot clock, inside a 42-game season against an 18-team
+racks under a 3-second shot clock, inside a 37-game season against a 16-team
 league. **Every shot is real physics** — player and AI share one simulator, and
 swishes (2 pts) emerge from entry angle, never from dice rolls.
 
-Design spec: `hoop-shoot-league-handoff.md` (the original handoff is authoritative
-for physics numbers, scoring, and league structure).
+Design spec: `hoop-shoot-league-handoff.md` (authoritative for physics numbers
+and scoring; the league was later downsized from the handoff's 18 teams/42 games
+to 16 teams/37 games — 15 active authored shooters + 2 `retired` legacy ones
+kept so old seasons still resolve).
 
 ## Commands
 
@@ -28,9 +30,9 @@ src/core/      HEADLESS game core — pure TS, zero DOM/Vue/Three (enforced by t
   shot/        drag→launch mapping (angle 1:1 = the skill; power saturating = forgiving), classifier
   ai/          ratings → physical aim error (fitted tables in aimError.ts), mood/streaks, cadence
   match/       rack state machine (25 balls / 3 s clock / 7-ball OT), head-to-head match engine
-  league/      schedule gen (42 days × 9 games, ×3 conf ×2 cross), standings+tiebreakers,
+  league/      schedule gen (37 days × 8 games at 16 teams, ×3 conf ×2 cross), standings+tiebreakers,
                quickSim (off-screen games), playoffs (Bo3/Bo5/Bo5), player self-sim EWMA ratings
-  data/        the 17 authored AI shooters
+  data/        the authored AI shooters (15 active + 2 retired)
 engine/        browser-side, non-Vue: Three.js views (ball squash-and-stretch, verlet net,
                rim wobble, mannequin rigs, camera rig, confetti), spring/tween anims,
                procedural Web Audio sfx (zero audio files), drag input, IndexedDB repositories

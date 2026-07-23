@@ -6,7 +6,7 @@
  */
 import type { AiRatings } from '../ai/types'
 import { hashSeed } from '../rng/rng'
-import { generateSchedule, SEASON_DAYS, type TeamRef } from './scheduleGen'
+import { generateSchedule, seasonDaysOf, type TeamRef } from './scheduleGen'
 import { quickSimGame } from './quickSim'
 import { conferenceTable } from './standings'
 import { advanceBracket, buildQuarterfinals, recordSeriesGame } from './playoffs'
@@ -89,7 +89,7 @@ export function resolveDay(
     }
   }
   state.currentDay++
-  if (state.currentDay > SEASON_DAYS) {
+  if (state.currentDay > seasonDaysOf(state.schedule)) {
     startPlayoffs(state, teams)
   }
 }
@@ -136,7 +136,7 @@ export function resolvePlayoffStep(
     )
     mine.games.push({
       id: `${mine.id}-g${gameNo}`,
-      day: SEASON_DAYS + gameNo,
+      day: seasonDaysOf(state.schedule) + gameNo,
       homeId: mine.highSeedId,
       awayId: mine.lowSeedId,
       homeScore: playerIsHigh ? live.playerScore : live.oppScore,
@@ -162,7 +162,7 @@ export function resolvePlayoffStep(
         recordSeriesGame(s, r.home.points, r.away.points)
         s.games.push({
           id: `${s.id}-g${gameNo}`,
-          day: SEASON_DAYS + gameNo,
+          day: seasonDaysOf(state.schedule) + gameNo,
           homeId: s.highSeedId,
           awayId: s.lowSeedId,
           homeScore: r.home.points,
